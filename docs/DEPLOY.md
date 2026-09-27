@@ -125,6 +125,7 @@ cd frontend && npm run build
 
 | Sintoma | Causa / solución |
 |---|---|
+| `pydantic-core ... maturin / Read-only file system` en el build | Render usó Python 3.14 (su default). Fija `PYTHON_VERSION=3.11.9` en Environment y haz **Clear build cache & deploy** (hay `.python-version` en la raíz y en `backend/`). |
 | `SSL connection has been requested but not supported` | Falta `?sslmode=require` en `DATABASE_URL`. |
 | `Connection refused` / timeout a Supabase | Usaste la conexión directa (IPv6). Cambia al **Session pooler :6543**. |
 | `relation "empresas" already exist` | `start.sh` aplica *stamp*; o ejecuta `alembic stamp head` a mano. |

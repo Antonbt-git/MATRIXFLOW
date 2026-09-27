@@ -11,6 +11,8 @@ services:
     healthCheckPath: /health
     autoDeploy: true
     envVars:
+      # Obligatorio: sin esto Render usa su default (3.14.x) y pip intenta
+      # compilar pydantic-core/numpy desde fuente (falla). Debe ser completo.
       - key: PYTHON_VERSION
         value: "3.11.9"
       # Supabase: Settings → Database → Connection string (host pooler.supabase.com)
