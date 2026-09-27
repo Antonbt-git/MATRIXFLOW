@@ -73,6 +73,8 @@ export const api = {
   updateUser: (id: number, data: object) => client.put(`/users/${id}`, data),
   deleteUser: (id: number) => client.delete(`/users/${id}`),
   audit: (cfg?: Cfg) => get<any[]>('/reports/auditoria?limit=100', cfg),
+  // Carnet de auditoría (Historial): 7 días, usuarios activos, ubicación
+  carnet: (cfg?: Cfg) => get<any>('/reports/carnet', cfg),
   // Biométrica: registro facial + verificación por DNI (extensión del plan)
   registerFace: (dni: string, descriptor: number[], usuario_id?: number) =>
     post<any>('/biometrics/register', { dni, descriptor, usuario_id }),

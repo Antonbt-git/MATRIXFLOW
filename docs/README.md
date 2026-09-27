@@ -11,6 +11,8 @@ React+TS → FastAPI → NumPy → PostgreSQL. Ver Plan Maestro v1.0.
 - POST /operations/matrices/{add|subtract|multiply|transpose|scalar}
 - GET /operations/history (CA-08)
 - GET /reports/metas/{sucursal}/{periodo}, /reports/ventas, /reports/auditoria
+- GET /reports/carnet → carnet de auditoría: actividad 7 días, usuarios más
+  activos y ubicación del login (departamento, distrito, dirección)
 - Biométrica (extensión): POST /biometrics/register, POST /biometrics/verify,
   GET|DELETE /biometrics/records, GET /biometrics/logs
 
@@ -23,7 +25,8 @@ React+TS → FastAPI → NumPy → PostgreSQL. Ver Plan Maestro v1.0.
 
 ## Criterios de aceptación
 CA-01 login por rol, CA-04/05 vectores/matrices, CA-06 dimensiones rechazadas (400),
-CA-07 resultados NumPy, CA-08 historial, CA-09 visualización, CA-10 reportes persistidos.
+CA-07 resultados NumPy, CA-08 historial, CA-09 visualización, CA-10 reportes persistidos,
+CA-13 auditoría con IP y ubicación (geolocalización en login, services/geoip.py).
 
 ## Puesta en marcha
 Backend: `pip install -r requirements.txt && uvicorn app.main:app`
@@ -31,7 +34,7 @@ Migraciones (§10): `alembic upgrade head` (crea las 19 tablas + las 2 biométri
 DATABASE_URL define destino)
 Seed: `python database/seed.py` (crea admin/admin123 + roles RBAC)
 Frontend: `npm install && npm run dev`
-Tests: `pytest tests/ -q` (29 pruebas: motor, API, validadores, seguridad, biometría)
+Tests: `pytest tests/ -q` (36 pruebas: motor, API, validadores, seguridad, biometría, carnet)
 
 ## Despliegue en la nube
 Guía paso a paso en [`DEPLOY.md`](DEPLOY.md): **Supabase** (PostgreSQL, Session

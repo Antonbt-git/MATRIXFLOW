@@ -315,3 +315,35 @@ class VerificacionBiometricaResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# --- Carnet de auditoría (Historial) ---
+class CarnetActividadDia(BaseModel):
+    fecha: str
+    eventos: int
+    operaciones: int
+    logins: int
+
+
+class CarnetUsuarioActivo(BaseModel):
+    usuario_id: Optional[int] = None
+    username: str
+    rol: Optional[str] = None
+    total: int
+
+
+class CarnetUbicacion(BaseModel):
+    departamento: Optional[str] = None
+    distrito: Optional[str] = None
+    direccion: Optional[str] = None
+    ip: Optional[str] = None
+    fecha: Optional[datetime] = None
+    fuente: Optional[str] = None
+
+
+class CarnetResponse(BaseModel):
+    usuario: dict
+    actividad_7_dias: List[CarnetActividadDia]
+    usuarios_activos: List[CarnetUsuarioActivo]
+    ubicacion: CarnetUbicacion
+    resumen: dict

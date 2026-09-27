@@ -15,7 +15,10 @@ Este proyecto implementa la totalidad de los requerimientos funcionales y técni
     - **Operaciones Vectoriales**: Sumas, restas y producto punto para cálculo de ingresos.
     - **Operaciones Matriciales**: Multiplicación y transposición para transformación de indicadores.
     - **Combinaciones Lineales**: Generación de indicadores ponderados.
-- **Auditoría y Control**: Registro detallado de cada operación matemática y evento del sistema.
+- **Auditoría y Control**: Registro detallado de cada operación matemática y evento del sistema,
+  con IP y ubicación del inicio de sesión (departamento, distrito y dirección) y un
+  **Carnet de Auditoría** en Historial: actividad de los últimos 7 días, usuarios más
+  activos y lugar desde el que te conectas.
 - **Verificación Biométrica**: Registro facial de los usuarios (descriptor de 128
   dimensiones + DNI) e identificación por DNI + rostro que muestra sus datos y su
   actividad en la página (operaciones, ventas, sesiones y auditoría).
@@ -59,7 +62,7 @@ El sistema no solo almacena datos, sino que los procesa matemáticamente:
    (usa SQLite `backend/matrixflow_local.db` si no defines `DATABASE_URL`).
 2. **Datos**: `python database/seed.py` → admin `admin` / `admin123`.
 3. **Frontend**: `cd frontend && npm install && npm run dev` → http://localhost:5173.
-4. **Tests**: `cd backend && python -m pytest tests/ -q` (29 pruebas).
+4. **Tests**: `cd backend && python -m pytest tests/ -q` (36 pruebas).
 
 ### Producción (resumen)
 1. **Supabase** → copia la *Session pooler* (puerto `6543`, `?sslmode=require`).

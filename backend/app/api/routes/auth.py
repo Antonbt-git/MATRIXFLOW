@@ -6,6 +6,7 @@ from app.core.dependencies import get_current_user
 from app.core.security import SecurityHandler
 from app.models.business_models import Usuario, AuditoriaEvento
 from app.schemas.business_schemas import UsuarioResponse
+from app.services.geoip import ip_del_cliente, resolver_ubicacion
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 def login(form_data: OAuth2PasswordRequestForm = Depends(),
           request: Request = None, db: Session = Depends(get_db)):
     usuario = db.query(Usuario).filter(Usuario.username == form_data.username).first()
-    ip = request.client.host if request and request.client else None
+    ip = ip_del_cliente(request)
 
     if not usuario or not SecurityHandler.verify_password(form_data.password, usuario.password_hash):
         # §13: auditoría de intento fallido con IP, estado y resultado
@@ -31,9 +32,14 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(),
         data={"sub": usuario.username, "rol": usuario.rol, "empresa_id": usuario.empresa_id}
     )
 
-    # §13: registrar LOGIN exitoso (usuario, acción, módulo, fecha, IP, estado, resultado)
+    # §13: registrar LOGIN exitoso (usuario, acción, módulo, fecha, IP, estado,
+    # resultado) + ubicación desde la que se conecta (carnet de auditoría)
+    ubicacion = resolver_ubicacion(ip)
     db.add(AuditoriaEvento(usuario_id=usuario.id, accion="LOGIN", modulo="AUTH",
-                           detalle="Login exitoso", ip=ip, estado="OK", resultado="Token emitido"))
+                           detalle="Login exitoso", ip=ip, estado="OK", resultado="Token emitido",
+                           departamento=ubicacion.get("departamento"),
+                           distrito=ubicacion.get("distrito"),
+                           direccion=ubicacion.get("direccion")))
     db.commit()
 
     return {

@@ -109,6 +109,10 @@ class AuditoriaEvento(Base):
     ip = Column(String)      # §13: IP cuando corresponda
     estado = Column(String, default="OK")  # §13: estado
     resultado = Column(String)  # §13: resultado
+    # §13 + carnet de auditoría: ubicación desde la que se inició sesión
+    departamento = Column(String)
+    distrito = Column(String)
+    direccion = Column(String)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
 
