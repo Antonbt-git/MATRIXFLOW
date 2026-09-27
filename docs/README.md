@@ -28,6 +28,11 @@ Seed: `python database/seed.py` (crea admin/admin123 + roles RBAC)
 Frontend: `npm install && npm run dev`
 Tests: `pytest tests/ -q` (17 pruebas: motor, API, validadores, seguridad)
 
+## Despliegue en la nube
+Guía paso a paso en [`DEPLOY.md`](DEPLOY.md): **Supabase** (PostgreSQL, Session
+pooler :6543) + **Render** (blueprint `render.yaml`, arranque `backend/start.sh` =
+Alembic → `app/bootstrap.py` → uvicorn) + **Vercel** (SPA con `frontend/vercel.json`).
+
 ## Stack frontend (§8.1)
 React+TS+Vite, TanStack Query + Axios (services/client.ts), Tailwind (paleta §8.4),
 Lucide React (iconografía), React Hook Form + Zod (schemas/business.ts), Recharts.
