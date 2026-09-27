@@ -29,14 +29,16 @@ git push -u origin main
 
 1. **New Project** (elige región `South America (São Paulo)` para menor latencia con Render).
 2. Espera a que esté *Active* y ve a **Settings → Database**.
-3. Copia la **Connection string → Session pooler** (puerto `6543`, IPv4, compatible con Render):
+3. Copia la **Connection string → Session pooler** (el host que contiene
+   `pooler.supabase.com`, NO la conexión directa `db.<ref>.supabase.co`):
 
    ```
-   postgresql://postgres.aws-0-XX:[PASSWORD]@aws-0-XX-XXXX.pooler.supabase.com:6543/postgres?sslmode=require
+   postgresql://postgres.[REF]:[PASSWORD]@aws-0-XX-XXXX.pooler.supabase.com:5432/postgres?sslmode=require
    ```
 
-   > ⚠️ Usa el **Session pooler (6543)**, no la conexión directa (5432): la conexión
-   > directa de proyectos nuevos es IPv6 y Render no la alcanza.
+   > ⚠️ Usa siempre el **pooler** (`pooler.supabase.com`, puerto 5432 o 6543):
+   > la conexión directa de proyectos nuevos es IPv6 y Render no la alcanza.
+   > Añade `?sslmode=require` si tu cadena no lo trae.
 4. Ejecuta las migraciones y el seed **una sola vez** desde tu máquina:
 
    ```bash

@@ -13,8 +13,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.9"
-      # Supabase: Settings → Database → Connection string (Session pooler, puerto 6543)
-      # y agrega ?sslmode=require al final.
+      # Supabase: Settings → Database → Connection string (host pooler.supabase.com)
+      # con ?sslmode=require al final (por ejemplo tu cadena en puerto 5432).
       - key: DATABASE_URL
         sync: false
       # Generado por Render (cámbialo si prefieres uno propio)
