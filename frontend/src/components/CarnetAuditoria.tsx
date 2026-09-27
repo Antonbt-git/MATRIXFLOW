@@ -33,8 +33,10 @@ export default function CarnetAuditoria() {
   };
   useEffect(() => { load(); }, []);
 
-  if (cargando) return <div className="bg-white p-4 rounded shadow text-sm text-muted">Cargando carnet…</div>;
-  if (error) return <div className="bg-white p-4 rounded shadow text-sm text-red-600">{error}</div>;
+  if (cargando) return (
+    <div className="card card-pad text-sm text-muted animate-pulse">Cargando carnet de auditoría…</div>
+  );
+  if (error) return <div className="card card-pad text-sm"><div className="msg msg-err">{error}</div></div>;
   if (!data) return null;
 
   const dias = data.actividad_7_dias || [];
@@ -44,11 +46,11 @@ export default function CarnetAuditoria() {
   const ubi = data.ubicacion || {};
 
   return (
-    <div className="bg-white rounded-xl shadow overflow-hidden border border-slate-200">
+    <div className="card overflow-hidden animate-fade-up">
       {/* Cabecera de la credencial */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-600 text-white px-5 py-4 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-gradient-to-r from-sidebar via-slate-800 to-primary/80 text-white px-5 py-4 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-accent/90 flex items-center justify-center text-xl font-bold">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-xl font-bold shadow-lg">
             {iniciales(data.usuario.username)}
           </div>
           <div>
@@ -58,10 +60,11 @@ export default function CarnetAuditoria() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs bg-white/10 px-3 py-2 rounded-lg">
-          <ShieldCheck size={16} />
+        <div className="flex items-center gap-2 text-xs bg-white/10 border border-white/10 px-3 py-2 rounded-lg">
+          <ShieldCheck size={16} className="text-accent" />
           <span>Carnet de Auditoría · {new Date().toLocaleDateString()}</span>
-          <button onClick={load} title="Actualizar" className="ml-2 hover:text-slate-300">
+          <button onClick={load} title="Actualizar"
+            className="ml-2 hover:text-accent transition p-0.5">
             <RefreshCw size={14} />
           </button>
         </div>

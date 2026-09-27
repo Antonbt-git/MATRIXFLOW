@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { InputField, Button } from '../components/UI';
+import { InputField, Button, PageHeader, Card, Msg, EmptyState, Badge } from '../components/UI';
 import { RowActions, CellInput } from '../components/Crud';
+import { Boxes, PackagePlus, TriangleAlert, CircleAlert } from 'lucide-react';
 
 export default function Inventario() {
   const [items, setItems] = useState<any[]>([]);
@@ -11,15 +12,18 @@ export default function Inventario() {
   const [editId, setEditId] = useState<number | null>(null);
   const [draft, setDraft] = useState<any>({});
   const [error, setError] = useState('');
+  const [ok, setOk] = useState(false);
 
   const load = async () => {
-    try { setItems(await api.inventory()); setError(''); } catch (e: any) { setError(e.message); }
+    try { setItems(await api.inventory()); setError(''); setOk(true); } catch (e: any) { setError(e.message); setOk(false); }
   };
   useEffect(() => { load(); }, []);
 
+  const flash = (t: string, isErr = false) => { setError(t); setOk(!isErr); };
+
   const adjust = async () => {
-    try { await api.adjustInventory(parseInt(suc), parseInt(prod), parseFloat(cant)); load(); }
-    catch (e: any) { setError(e.response?.data?.detail || e.message); }
+    try { await api.adjustInventory(parseInt(suc), parseInt(prod), parseFloat(cant)); flash('Stock ajustado ✓'); load(); }
+    catch (e: any) { flash(e.response?.data?.detail || e.message, true); }
   };
 
   const save = async () => {
@@ -29,51 +33,82 @@ export default function Inventario() {
         stock_actual: parseFloat(draft.stock_actual) || 0,
         stock_minimo: parseFloat(draft.stock_minimo) || 0,
       });
-      setEditId(null); load();
-    } catch (e: any) { setError(e.response?.data?.detail || e.message); }
+      flash('Actualizado ✓'); setEditId(null); load();
+    } catch (e: any) { flash(e.response?.data?.detail || e.message, true); }
   };
 
   const remove = async (id: number) => {
     if (!confirm('¿Eliminar registro de inventario?')) return;
-    try { await api.deleteInventario(id); load(); }
-    catch (e: any) { setError(e.response?.data?.detail || e.message); }
+    try { await api.deleteInventario(id); flash('Eliminado ✓'); load(); }
+    catch (e: any) { flash(e.response?.data?.detail || e.message, true); }
   };
 
+  const bajoMin = items.filter((i) => i.stock_actual < i.stock_minimo).length;
+  const stockTotal = items.reduce((s, i) => s + (i.stock_actual ?? 0), 0);
+
   return (
-    <div className="p-2 flex flex-col gap-4 max-w-4xl">
-      <h1 className="text-2xl font-bold text-text">Inventario (RF-06) — CRUD</h1>
-      <div className="bg-white p-4 rounded shadow flex gap-2 items-end flex-wrap">
-        <InputField label="Sucursal ID" value={suc} onChange={(e) => setSuc(e.target.value)} />
-        <InputField label="Producto ID" value={prod} onChange={(e) => setProd(e.target.value)} />
-        <InputField label="Cantidad (+/-)" value={cant} onChange={(e) => setCant(e.target.value)} />
-        <Button onClick={adjust}>Ajustar stock</Button>
-      </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="font-semibold mb-2">Existencias</h2>
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-muted border-b"><th className="py-1">ID</th><th>Suc</th><th>Prod</th><th>Stock</th><th>Mín</th><th /></tr></thead>
-          <tbody>
-            {items.map((i) => (
-              <tr key={i.id} className="border-b">
-                <td className="py-1">{i.id}</td>
-                <td>{i.sucursal_id}</td>
-                <td>{i.producto_id}</td>
-                <td className={i.stock_actual < i.stock_minimo ? 'text-red-600 font-semibold' : ''}>
-                  {editId === i.id
-                    ? <CellInput type="number" value={String(draft.stock_actual ?? '')} onChange={(x) => setDraft({ ...draft, stock_actual: x })} />
-                    : i.stock_actual}
-                </td>
-                <td>{editId === i.id
-                  ? <CellInput type="number" value={String(draft.stock_minimo ?? '')} onChange={(x) => setDraft({ ...draft, stock_minimo: x })} />
-                  : i.stock_minimo}</td>
-                <td><RowActions editing={editId === i.id} onEdit={() => { setEditId(i.id); setDraft({ ...i }); }}
-                  onSave={save} onCancel={() => setEditId(null)} onDelete={() => remove(i.id)} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {items.length === 0 && <p className="text-muted text-sm">Sin stock. Ajusta para crear.</p>}
+    <div>
+      <PageHeader
+        title="Inventario"
+        description="Control de existencias por sucursal con mínimos y ajustes (RF-06)"
+        icon={Boxes}
+        badge={bajoMin
+          ? <Badge tone="danger"><TriangleAlert size={12} /> {bajoMin} bajo mínimo</Badge>
+          : <Badge tone="ok">Sin alertas</Badge>}
+        actions={<Badge tone="neutral">Stock total {stockTotal}</Badge>}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <Card title="Ajustar stock" subtitle="Suma o resta cantidad (+/-)" icon={PackagePlus} className="h-fit">
+          <div className="grid grid-cols-2 gap-x-3">
+            <InputField label="Sucursal ID" type="number" value={suc} onChange={(e) => setSuc(e.target.value)} />
+            <InputField label="Producto ID" type="number" value={prod} onChange={(e) => setProd(e.target.value)} />
+          </div>
+          <InputField label="Cantidad (+/-)" type="number" value={cant} onChange={(e) => setCant(e.target.value)} />
+          <Button onClick={adjust} className="w-full">Ajustar stock</Button>
+          {error && <div className="mt-4"><Msg type={ok ? 'ok' : 'err'}>{error}</Msg></div>}
+        </Card>
+
+        <Card title="Existencias" subtitle="Edita stock actual y mínimo en línea" icon={Boxes}
+          padded={false} className="lg:col-span-2 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr><th>ID</th><th>Suc</th><th>Prod</th><th>Stock</th><th>Mín</th><th className="text-right">Acciones</th></tr>
+              </thead>
+              <tbody>
+                {items.map((i) => (
+                  <tr key={i.id}>
+                    <td className="font-mono text-xs text-muted">#{i.id}</td>
+                    <td className="font-mono text-xs">#{i.sucursal_id}</td>
+                    <td className="font-mono text-xs">#{i.producto_id}</td>
+                    <td className={i.stock_actual < i.stock_minimo ? 'text-red-600 font-bold' : 'font-semibold text-text'}>
+                      {editId === i.id
+                        ? <CellInput type="number" value={String(draft.stock_actual ?? '')} onChange={(x) => setDraft({ ...draft, stock_actual: x })} />
+                        : (
+                          <span className="flex items-center gap-2">
+                            {i.stock_actual}
+                            {i.stock_actual < i.stock_minimo && <Badge tone="danger">mín</Badge>}
+                          </span>
+                        )}
+                    </td>
+                    <td>{editId === i.id
+                      ? <CellInput type="number" value={String(draft.stock_minimo ?? '')} onChange={(x) => setDraft({ ...draft, stock_minimo: x })} />
+                      : i.stock_minimo}</td>
+                    <td className="text-right">
+                      <RowActions editing={editId === i.id} onEdit={() => { setEditId(i.id); setDraft({ ...i }); }}
+                        onSave={save} onCancel={() => setEditId(null)} onDelete={() => remove(i.id)} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {items.length === 0 && (
+            <EmptyState icon={CircleAlert} title="Sin stock registrado"
+              description="Usa el ajuste de stock para crear el primer registro." />
+          )}
+        </Card>
       </div>
     </div>
   );

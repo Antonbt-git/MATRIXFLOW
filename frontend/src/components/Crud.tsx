@@ -10,26 +10,26 @@ export const RowActions = ({
   onCancel: () => void;
   onDelete: () => void;
 }) => (
-  <span className="flex gap-2 justify-end">
+  <span className="flex gap-1.5 justify-end">
     {editing ? (
       <>
         <button onClick={onSave} title="Guardar"
-          className="p-1.5 rounded bg-green-600 text-white hover:bg-green-700">
+          className="p-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm">
           <Check size={14} />
         </button>
         <button onClick={onCancel} title="Cancelar"
-          className="p-1.5 rounded bg-gray-400 text-white hover:bg-gray-500">
+          className="p-2 rounded-lg bg-slate-400 text-white hover:bg-slate-500 transition">
           <X size={14} />
         </button>
       </>
     ) : (
       <>
         <button onClick={onEdit} title="Editar"
-          className="p-1.5 rounded bg-primary text-white hover:opacity-80">
+          className="p-2 rounded-lg bg-primary text-white hover:bg-blue-700 transition shadow-sm">
           <Pencil size={14} />
         </button>
         <button onClick={onDelete} title="Eliminar"
-          className="p-1.5 rounded bg-red-600 text-white hover:bg-red-700">
+          className="p-2 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition">
           <Trash2 size={14} />
         </button>
       </>
@@ -45,6 +45,6 @@ export const CellInput = ({ value, onChange, type = 'text' }: {
     type={type}
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="border rounded px-1 py-0.5 w-full text-sm"
+    className="input !px-2 !py-1 text-xs"
   />
 );

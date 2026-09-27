@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { InputField, Button } from '../components/UI';
+import { InputField, Button, PageHeader, Card, Msg, EmptyState, Badge } from '../components/UI';
 import { RowActions, CellInput } from '../components/Crud';
+import { ShoppingCart, Receipt, CircleAlert } from 'lucide-react';
 import { api } from '../services/api';
 
 const Sales: React.FC = () => {
@@ -9,18 +10,21 @@ const Sales: React.FC = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [draft, setDraft] = useState<any>({});
   const [msg, setMsg] = useState('');
+  const [err, setErr] = useState(false);
 
   const load = async () => {
-    try { setItems(await api.listVentas()); } catch (e: any) { setMsg(e.message); }
+    try { setItems(await api.listVentas()); setErr(false); } catch (e: any) { setMsg(e.message); setErr(true); }
   };
   useEffect(() => { load(); }, []);
+
+  const flash = (t: string, isErr = false) => { setMsg(t); setErr(isErr); };
 
   const handleRegister = async () => {
     try {
       await api.registerVenta(parseInt(sale.sucursal_id), parseInt(sale.producto_id), parseFloat(sale.cantidad));
-      setMsg('Venta registrada y stock actualizado ✓');
+      flash('Venta registrada y stock actualizado ✓');
       load();
-    } catch (e: any) { setMsg(e.response?.data?.detail || e.message); }
+    } catch (e: any) { flash(e.response?.data?.detail || e.message, true); }
   };
 
   const save = async () => {
@@ -30,57 +34,80 @@ const Sales: React.FC = () => {
         sucursal_id: draft.sucursal_id, producto_id: draft.producto_id,
         cantidad: parseFloat(draft.cantidad) || 1, usuario_id: 0,
       });
-      setMsg('Venta actualizada ✓'); setEditId(null); load();
-    } catch (e: any) { setMsg(e.response?.data?.detail || e.message); }
+      flash('Venta actualizada ✓'); setEditId(null); load();
+    } catch (e: any) { flash(e.response?.data?.detail || e.message, true); }
   };
 
   const remove = async (id: number) => {
     if (!confirm('¿Eliminar venta?')) return;
-    try { await api.deleteVenta(id); setMsg('Venta eliminada ✓'); load(); }
-    catch (e: any) { setMsg(e.response?.data?.detail || e.message); }
+    try { await api.deleteVenta(id); flash('Venta eliminada ✓'); load(); }
+    catch (e: any) { flash(e.response?.data?.detail || e.message, true); }
   };
 
+  const total = items.reduce((s, v) => s + (v.monto_total ?? 0), 0);
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-text">Registro de Ventas</h1>
-        <p className="text-muted">CRUD de transacciones con validación de stock</p>
-      </header>
+    <div>
+      <PageHeader
+        title="Registro de Ventas"
+        description="CRUD de transacciones con validación de stock y descuento automático (RF-05)"
+        icon={ShoppingCart}
+        badge={<Badge tone="neutral">{items.length} registros</Badge>}
+      />
 
-      <div className="bg-white p-8 rounded-xl shadow-sm border mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <InputField label="ID Sucursal" type="number" value={sale.sucursal_id}
-            onChange={(e) => setSale({ ...sale, sucursal_id: e.target.value })} />
-          <InputField label="ID Producto" type="number" value={sale.producto_id}
-            onChange={(e) => setSale({ ...sale, producto_id: e.target.value })} />
-          <InputField label="Cantidad" type="number" value={sale.cantidad}
-            onChange={(e) => setSale({ ...sale, cantidad: e.target.value })} />
-        </div>
-        <Button onClick={handleRegister}>Procesar Venta</Button>
-        {msg && <p className="text-sm mt-4 text-slate-600">{msg}</p>}
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Nueva venta */}
+        <Card title="Nueva venta" subtitle="Procesa el producto punto cantidad · precio" icon={Receipt} className="lg:col-span-1 h-fit">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-x-4">
+            <InputField label="ID Sucursal" type="number" value={sale.sucursal_id}
+              onChange={(e) => setSale({ ...sale, sucursal_id: e.target.value })} />
+            <InputField label="ID Producto" type="number" value={sale.producto_id}
+              onChange={(e) => setSale({ ...sale, producto_id: e.target.value })} />
+            <InputField label="Cantidad" type="number" value={sale.cantidad}
+              onChange={(e) => setSale({ ...sale, cantidad: e.target.value })} />
+          </div>
+          <Button onClick={handleRegister} className="w-full">Procesar venta</Button>
+          {msg && <div className="mt-4"><Msg type={err ? 'err' : 'ok'}>{msg}</Msg></div>}
+        </Card>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border">
-        <h3 className="font-bold mb-3">Ventas registradas</h3>
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-muted border-b">
-            <th className="py-1">ID</th><th>Suc</th><th>Prod</th><th>Cant</th><th>Monto</th><th />
-          </tr></thead>
-          <tbody>
-            {items.map((v) => (
-              <tr key={v.id} className="border-b">
-                <td className="py-1">{v.id}</td>
-                <td>{editId === v.id ? <CellInput type="number" value={String(draft.sucursal_id)} onChange={(x) => setDraft({ ...draft, sucursal_id: parseInt(x) || 1 })} /> : v.sucursal_id}</td>
-                <td>{editId === v.id ? <CellInput type="number" value={String(draft.producto_id)} onChange={(x) => setDraft({ ...draft, producto_id: parseInt(x) || 1 })} /> : v.producto_id}</td>
-                <td>{editId === v.id ? <CellInput type="number" value={String(draft.cantidad)} onChange={(x) => setDraft({ ...draft, cantidad: x })} /> : v.cantidad}</td>
-                <td>${v.monto_total}</td>
-                <td><RowActions editing={editId === v.id} onEdit={() => { setEditId(v.id); setDraft({ ...v }); }}
-                  onSave={save} onCancel={() => setEditId(null)} onDelete={() => remove(v.id)} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {items.length === 0 && <p className="text-muted text-sm">Sin ventas.</p>}
+        {/* Listado */}
+        <Card
+          title="Ventas registradas"
+          subtitle="Edita o elimina cada transacción"
+          icon={ShoppingCart}
+          padded={false}
+          className="lg:col-span-2 overflow-hidden"
+          actions={<Badge tone="ok">Total ${total.toLocaleString()}</Badge>}
+        >
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Sucursal</th><th>Producto</th><th>Cantidad</th><th>Monto</th><th className="text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((v) => (
+                  <tr key={v.id}>
+                    <td className="font-mono text-xs text-muted">#{v.id}</td>
+                    <td>{editId === v.id ? <CellInput type="number" value={String(draft.sucursal_id)} onChange={(x) => setDraft({ ...draft, sucursal_id: parseInt(x) || 1 })} /> : v.sucursal_id}</td>
+                    <td>{editId === v.id ? <CellInput type="number" value={String(draft.producto_id)} onChange={(x) => setDraft({ ...draft, producto_id: parseInt(x) || 1 })} /> : v.producto_id}</td>
+                    <td>{editId === v.id ? <CellInput type="number" value={String(draft.cantidad)} onChange={(x) => setDraft({ ...draft, cantidad: x })} /> : v.cantidad}</td>
+                    <td className="font-semibold text-text">${v.monto_total}</td>
+                    <td className="text-right">
+                      <RowActions editing={editId === v.id} onEdit={() => { setEditId(v.id); setDraft({ ...v }); }}
+                        onSave={save} onCancel={() => setEditId(null)} onDelete={() => remove(v.id)} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {items.length === 0 && (
+            <EmptyState icon={CircleAlert} title="Sin ventas registradas"
+              description="Procesa la primera venta desde el formulario de la izquierda." />
+          )}
+        </Card>
       </div>
     </div>
   );

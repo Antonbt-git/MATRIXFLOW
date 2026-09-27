@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { StatCard, MathPanel } from '../components/AnalysisComponents';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { PageHeader, Card, Button, Badge, EmptyState } from '../components/UI';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend,
+} from 'recharts';
+import {
+  DollarSign, Boxes, Activity, TrendingUp, Store, Package, Target,
+  Download, RefreshCw, Clock, CircleAlert,
+} from 'lucide-react';
 import { api } from '../services/api';
 import { useFetch } from '../hooks/useFetch';
 
@@ -23,9 +30,15 @@ function download(name: string, rows: Record<string, unknown>[]) {
   URL.revokeObjectURL(a.href);
 }
 
+const TITULO: Record<string, string> = {
+  CREATE: 'Creación', UPDATE: 'Actualización', DELETE: 'Eliminación',
+  LOGIN: 'Inicio de sesión', LOGOUT: 'Cierre de sesión', VIEW: 'Consulta',
+};
+
 const Dashboard: React.FC = () => {
   const [sucursalId, setSucursalId] = useState(1);
   const [ingresos, setIngresos] = useState<any>(null);
+  const [exportando, setExportando] = useState(false);
   const { data: ventas } = useFetch(() => api.listVentas());
   const { data: inventario } = useFetch(() => api.inventory());
   const { data: historial } = useFetch(() => api.history());
@@ -57,6 +70,7 @@ const Dashboard: React.FC = () => {
   const bajoMinimo = (inventario ?? []).filter((i: any) => i.stock_actual < i.stock_minimo).length;
   // §14: indicadores de procesamiento
   const opsOk = (historial ?? []).filter((h: any) => (h.estado ?? 'OK') === 'OK').length;
+  const montoVentas = (ventas ?? []).reduce((s: number, v: any) => s + (v.monto_total ?? 0), 0);
 
   const mathData = ingresos && {
     operacion: 'Producto Punto (Dot Product)',
@@ -65,85 +79,163 @@ const Dashboard: React.FC = () => {
     resultado: ingresos.ingresos_totales,
   };
 
+  const exportar = () => {
+    setExportando(true);
+    download('ventas.csv', (ventas ?? []) as any[]);
+    setTimeout(() => setExportando(false), 600);
+  };
+
   return (
-    <div className="p-8 bg-app min-h-screen">
-      <header className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-text">MatrixFlow Enterprise</h1>
-          <p className="text-muted">Análisis de Ventas mediante Álgebra Lineal</p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <input type="number" value={sucursalId} onChange={(e) => setSucursalId(parseInt(e.target.value) || 1)}
-            className="border p-2 rounded-md w-24" />
-          <button onClick={fetchAnalysis} className="bg-primary text-white px-4 py-2 rounded-md">Actualizar</button>
-          <button onClick={() => download('ventas.csv', (ventas ?? []) as any[])}
-            className="bg-accent text-white px-4 py-2 rounded-md">Exportar CSV</button>
-        </div>
-      </header>
+    <div>
+      <PageHeader
+        title="MatrixFlow Enterprise"
+        description="Panel ejecutivo de análisis de ventas mediante álgebra lineal · indicadores en tiempo real"
+        icon={TrendingUp}
+        badge={<Badge tone="accent">Fase 7</Badge>}
+        actions={
+          <>
+            <label className="field !mb-0">
+              <span className="field-label">Sucursal</span>
+              <input
+                type="number"
+                value={sucursalId}
+                onChange={(e) => setSucursalId(parseInt(e.target.value) || 1)}
+                className="input !w-24"
+              />
+            </label>
+            <Button variant="secondary" onClick={fetchAnalysis} className="self-end">
+              <RefreshCw size={15} /> Actualizar
+            </Button>
+            <Button variant="dark" onClick={exportar} className="self-end" disabled={exportando}>
+              <Download size={15} /> {exportando ? 'Exportando…' : 'Exportar CSV'}
+            </Button>
+          </>
+        }
+      />
 
       {/* §14: indicadores ejecutivos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard title="Ingresos Totales" value={`$${ingresos?.ingresos_totales ?? 0}`} description="Producto Punto cantidades·precios" color="text-primary" />
-        <StatCard title="Inventario Total" value={stockTotal} description={`${bajoMinimo} ítems bajo mínimo`} color="text-green-600" />
-        <StatCard title="Operaciones OK" value={`${opsOk}/${historial?.length ?? 0}`} description="Indicador de procesamiento" color="text-purple-600" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+        <StatCard
+          title="Ingresos totales"
+          value={`$${(ingresos?.ingresos_totales ?? 0).toLocaleString()}`}
+          description="Producto punto (cantidades · precios)"
+          icon={DollarSign}
+          tone="blue"
+          footer={`Sucursal #${sucursalId}`}
+        />
+        <StatCard
+          title="Ventas registradas"
+          value={ventas?.length ?? 0}
+          description={`Monto acumulado $${montoVentas.toLocaleString()}`}
+          icon={Store}
+          tone="violet"
+          footer="Transacciones con stock descontado"
+        />
+        <StatCard
+          title="Inventario total"
+          value={stockTotal}
+          description={`${bajoMinimo} ítems bajo el mínimo`}
+          icon={Boxes}
+          tone="emerald"
+          footer={bajoMinimo ? 'Requiere reposición' : 'Niveles saludables'}
+        />
+        <StatCard
+          title="Operaciones OK"
+          value={`${opsOk}/${historial?.length ?? 0}`}
+          description="Indicador de procesamiento"
+          icon={Activity}
+          tone="cyan"
+          footer="Pipeline matemático"
+        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
         {/* Ventas por sucursal */}
-        <div className="bg-white p-6 rounded-xl border">
-          <h3 className="text-lg font-bold mb-4">Ventas por Sucursal</h3>
+        <Card title="Ventas por sucursal" subtitle="Ingresos agregados por centro de operación" icon={Store}>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={porSucursal.length ? porSucursal : [{ name: 'Sin datos', val: 0 }]}>
-                <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip />
-                <Bar dataKey="val" fill="#2563EB" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#EEF2F7" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={{ stroke: '#E2E8F0' }} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: '#2563EB0D' }} contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }} />
+                <Bar dataKey="val" fill="#2563EB" radius={[6, 6, 0, 0]} maxBarSize={48} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
+
         {/* Ventas por producto */}
-        <div className="bg-white p-6 rounded-xl border">
-          <h3 className="text-lg font-bold mb-4">Ventas por Producto</h3>
+        <Card title="Ventas por producto" subtitle="Distribución de ingresos por SKU" icon={Package}>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={porProducto.length ? porProducto : [{ name: 'Sin datos', val: 0 }]}>
-                <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip />
-                <Bar dataKey="val" fill="#06B6D4" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#EEF2F7" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={{ stroke: '#E2E8F0' }} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: '#06B6D40D' }} contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }} />
+                <Bar dataKey="val" fill="#06B6D4" radius={[6, 6, 0, 0]} maxBarSize={48} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
+
         {/* Cumplimiento de metas */}
-        <div className="bg-white p-6 rounded-xl border">
-          <h3 className="text-lg font-bold mb-4">Cumplimiento de Metas</h3>
+        <Card title="Cumplimiento de metas" subtitle={`Meta vs. real · sucursal #${sucursalId}`} icon={Target}>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={metas?.ventas_reales?.map((v: number, i: number) => ({
                 name: `#${i + 1}`, real: v, meta: metas?.metas?.[i] ?? 0,
               })) ?? [{ name: 'Sin datos', real: 0, meta: 0 }]}>
-                <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip />
-                <Line type="monotone" dataKey="real" stroke="#2563EB" name="Real" />
-                <Line type="monotone" dataKey="meta" stroke="#94a3b8" name="Meta" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#EEF2F7" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={{ stroke: '#E2E8F0' }} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                <Line type="monotone" dataKey="real" stroke="#2563EB" strokeWidth={2.5} name="Real" dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="meta" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" name="Meta" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
+
         {/* Trazabilidad matemática */}
-        <div className="bg-white p-6 rounded-xl border">
-          <h3 className="text-lg font-bold mb-4">Trazabilidad Matemática</h3>
-          {mathData ? <MathPanel data={mathData} /> : <p className="text-muted text-sm">Cargando…</p>}
-        </div>
-        {/* Actividad reciente */}
-        <div className="bg-white p-6 rounded-xl border">
-          <h3 className="text-lg font-bold mb-4">Actividad Reciente</h3>
-          <div className="text-sm space-y-1 max-h-56 overflow-y-auto">
-            {(actividad ?? []).slice(0, 8).map((a: any) => (
-              <div key={a.id} className="border-b pb-1">#{a.id} {a.accion} <span className="text-muted">{a.modulo} · {a.estado} {a.ip ? `· ${a.ip}` : ''}</span></div>
-            ))}
-            {!actividad?.length && <p className="text-muted">Sin eventos.</p>}
-          </div>
-        </div>
+        <Card title="Trazabilidad matemática" subtitle="Cálculo de álgebra lineal del periodo" icon={Activity}>
+          {mathData ? <MathPanel data={mathData} /> : (
+            <p className="text-muted text-sm py-8 text-center">Calculando producto punto…</p>
+          )}
+        </Card>
       </div>
+
+      {/* Actividad reciente */}
+      <Card
+        title="Actividad reciente"
+        subtitle="Últimos eventos de auditoría del sistema"
+        icon={Clock}
+        actions={<Badge tone="neutral">{actividad?.length ?? 0} eventos</Badge>}
+      >
+        <div className="space-y-1 max-h-72 overflow-y-auto -mx-1 px-1">
+          {(actividad ?? []).slice(0, 10).map((a: any) => (
+            <div key={a.id} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
+              <span className={`shrink-0 w-2 h-2 rounded-full ${
+                (a.estado ?? 'OK') === 'OK' ? 'bg-emerald-500' : 'bg-red-500'
+              }`} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-text truncate">
+                  {TITULO[a.accion] ?? a.accion} <span className="text-muted font-normal">· {a.modulo}</span>
+                </p>
+                <p className="text-xs text-muted truncate">
+                  {a.ip ? `IP ${a.ip}` : 'Sistema'} · {a.estado ?? 'OK'}
+                </p>
+              </div>
+              <span className="text-[11px] text-muted font-mono shrink-0">#{a.id}</span>
+            </div>
+          ))}
+          {!actividad?.length && (
+            <EmptyState icon={CircleAlert} title="Sin eventos de auditoría" description="Las acciones que realices aparecerán aquí." />
+          )}
+        </div>
+      </Card>
     </div>
   );
 };

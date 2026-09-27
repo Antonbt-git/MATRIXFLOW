@@ -1,27 +1,55 @@
-import { InputField, Button } from '../components/UI';
+import { Building2, Store } from 'lucide-react';
+import { Button, PageHeader, Card, EmptyState, Badge } from '../components/UI';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 /** /empresa (§8.3): información corporativa. */
 export default function Empresa() {
   const { data: empresas, reload } = useFetch(() => api.listEmpresas());
   const { data: sucursales } = useFetch(() => api.listSucursales());
+  const navigate = useNavigate();
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-text">Información de la Empresa</h1>
-        <p className="text-muted">Corporación y sucursales asociadas (RF-03)</p>
-      </header>
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-        <h3 className="text-lg font-bold mb-4">Empresas registradas</h3>
+    <div>
+      <PageHeader
+        title="Información de la Empresa"
+        description="Corporación y sucursales asociadas (RF-03)"
+        icon={Building2}
+        badge={<Badge tone="neutral">{empresas?.length ?? 0} empresas</Badge>}
+        actions={
+          <>
+            <Button variant="secondary" onClick={reload}>Actualizar</Button>
+            <Button variant="dark" onClick={() => navigate('/empresa/gestion')}>Gestionar empresas</Button>
+            <Button onClick={() => navigate('/sucursales')}>Sucursales</Button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {empresas?.map((e) => (
-          <div key={e.id} className="border-b py-2 text-sm">
-            #{e.id} <b>{e.nombre}</b> — NIT {e.nit} — {e.sector}
-            <span className="text-muted"> · {sucursales?.filter((s) => s.empresa_id === e.id).length ?? 0} sucursales</span>
-          </div>
+          <Card
+            key={e.id}
+            title={e.nombre}
+            subtitle={`NIT ${e.nit} · ${e.sector ?? '—'}`}
+            icon={Building2}
+            className="card-interactive"
+            actions={<Badge tone="info">#{e.id}</Badge>}
+          >
+            <div className="flex items-center gap-2 text-sm text-muted">
+              <Store size={15} className="text-primary" />
+              {sucursales?.filter((s) => s.empresa_id === e.id).length ?? 0} sucursales asociadas
+            </div>
+          </Card>
         ))}
-        {!empresas?.length && <p className="text-muted text-sm">Sin empresas. Usa Sucursales/Productos o el seed.</p>}
+
+        {!empresas?.length && (
+          <div className="lg:col-span-2">
+            <EmptyState icon={Building2} title="Sin empresas registradas"
+              description="Usa el módulo de Gestión Empresarial o el seed para crear la primera."
+              action={<Button onClick={() => navigate('/empresa/gestion')}>Crear la primera</Button>} />
+          </div>
+        )}
       </div>
     </div>
   );
