@@ -1,4 +1,10 @@
 import os
+from dotenv import load_dotenv
+
+# Carga backend/.env si existe; NO sobreescribe variables ya definidas en el
+# entorno (por eso los tests pueden forzar su propia DATABASE_URL).
+load_dotenv()
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
