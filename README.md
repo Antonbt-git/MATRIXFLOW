@@ -16,6 +16,9 @@ Este proyecto implementa la totalidad de los requerimientos funcionales y técni
     - **Operaciones Matriciales**: Multiplicación y transposición para transformación de indicadores.
     - **Combinaciones Lineales**: Generación de indicadores ponderados.
 - **Auditoría y Control**: Registro detallado de cada operación matemática y evento del sistema.
+- **Verificación Biométrica**: Registro facial de los usuarios (descriptor de 128
+  dimensiones + DNI) e identificación por DNI + rostro que muestra sus datos y su
+  actividad en la página (operaciones, ventas, sesiones y auditoría).
 
 ---
 
@@ -40,6 +43,10 @@ El sistema no solo almacena datos, sino que los procesa matemáticamente:
 
 3. **Indicadores Ponderados**: Se implementan **Combinaciones Lineales** para crear índices de rentabilidad personalizados.
 
+4. **Identificación Facial**: El rostro se compara por **Distancia Euclidiana** entre
+   descriptores de 128 dimensiones (umbral 0.6) y **Similitud Coseno**:
+   $$d(\mathbf{a}, \mathbf{b}) = \lVert \mathbf{a} - \mathbf{b} \rVert_2 \le \tau$$
+
 ---
 
 ## 🚀 Guía de Instalación y Despliegue
@@ -52,7 +59,7 @@ El sistema no solo almacena datos, sino que los procesa matemáticamente:
    (usa SQLite `backend/matrixflow_local.db` si no defines `DATABASE_URL`).
 2. **Datos**: `python database/seed.py` → admin `admin` / `admin123`.
 3. **Frontend**: `cd frontend && npm install && npm run dev` → http://localhost:5173.
-4. **Tests**: `cd backend && python -m pytest tests/ -q` (17 pruebas).
+4. **Tests**: `cd backend && python -m pytest tests/ -q` (29 pruebas).
 
 ### Producción (resumen)
 1. **Supabase** → copia la *Session pooler* (puerto `6543`, `?sslmode=require`).

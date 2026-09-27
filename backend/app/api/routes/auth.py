@@ -40,6 +40,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(),
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
+            "id": usuario.id,
             "username": usuario.username,
             "rol": usuario.rol,
             "empresa_id": usuario.empresa_id

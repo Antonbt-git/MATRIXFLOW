@@ -181,3 +181,36 @@ class OperationResult(Base):
     operacion_id = Column(Integer, ForeignKey("math_operation_logs.id"))
     valor = Column(JSON)
     formato = Column(String, default="json")
+
+
+# ============================================================================
+# Extensión biométrica: registro facial + verificación por DNI
+# El rostro se vincula a un usuario ya existente (usuarios) y la verificación
+# calcula la distancia euclidiana entre descriptores (MathEngine, álgebra
+# lineal del plan) para identificar a la persona y mostrar su actividad.
+# ============================================================================
+
+class RegistroFacial(Base):
+    """Huella facial (descriptor 128-d) asociada a un usuario + su DNI."""
+    __tablename__ = "registros_faciales"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), unique=True, nullable=False)
+    dni = Column(String, unique=True, index=True, nullable=False)
+    descriptor = Column(JSON, nullable=False)          # vector 128 dimensiones
+    modelo = Column(String, default="face-api-v1")
+    registrado_por = Column(Integer, ForeignKey("usuarios.id"))
+    creado_en = Column(DateTime(timezone=True), server_default=func.now())
+    actualizado_en = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class VerificacionBiometrica(Base):
+    """Historial de intentos de verificación facial (auditoría §13/§15)."""
+    __tablename__ = "verificaciones_biometricas"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    dni_intentado = Column(String, index=True)
+    resultado = Column(String)     # MATCH | NO_MATCH | NO_ENCONTRADO
+    distancia = Column(Float)      # distancia euclidiana calculada
+    umbral = Column(Float)         # umbral usado en la decisión
+    ip = Column(String)
+    creado_en = Column(DateTime(timezone=True), server_default=func.now())

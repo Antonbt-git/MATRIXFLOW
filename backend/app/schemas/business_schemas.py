@@ -264,3 +264,54 @@ class UsuarioUpdate(BaseModel):
 class InventarioUpdate(BaseModel):
     stock_actual: Optional[float] = None
     stock_minimo: Optional[float] = None
+
+
+# --- Extensión biométrica: registro facial + verificación por DNI ---
+class BiometricoRegistroCreate(BaseModel):
+    dni: str = Field(min_length=6, max_length=15)
+    descriptor: List[float]
+    usuario_id: Optional[int] = None   # solo admin puede registrar a otro usuario
+
+
+class BiometricoVerificacionCreate(BaseModel):
+    dni: str = Field(min_length=6, max_length=15)
+    descriptor: List[float]
+
+
+class RegistroFacialResponse(BaseModel):
+    id: int
+    usuario_id: int
+    dni: str
+    modelo: str
+    username: Optional[str] = None
+    rol: Optional[str] = None
+    creado_en: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class BiometricoVerificacionResponse(BaseModel):
+    resultado: str            # MATCH | NO_MATCH | NO_ENCONTRADO
+    coincide: bool
+    mensaje: str
+    distancia: Optional[float] = None
+    umbral: float
+    confianza: float
+    similitud: Optional[float] = None
+    persona: Optional[dict] = None
+    actividad: Optional[dict] = None
+
+
+class VerificacionBiometricaResponse(BaseModel):
+    id: int
+    usuario_id: Optional[int] = None
+    dni_intentado: Optional[str] = None
+    resultado: str
+    distancia: Optional[float] = None
+    umbral: Optional[float] = None
+    ip: Optional[str] = None
+    creado_en: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

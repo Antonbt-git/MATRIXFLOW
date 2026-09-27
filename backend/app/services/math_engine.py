@@ -64,3 +64,34 @@ class MathEngine:
     @staticmethod
     def calculate_euclidean_distance(v1: np.ndarray, v2: np.ndarray) -> float:
         return float(np.linalg.norm(v1 - v2))
+
+    # --- Extensión biométrica: cotejo de descriptores faciales ---
+    @staticmethod
+    def cosine_similarity(v1: np.ndarray, v2: np.ndarray) -> float:
+        """Similitud coseno entre dos descriptores: 1.0 = idénticos, 0 = ortogonales."""
+        if not MathEngine.validate_dimensions(v1, v2):
+            raise ValueError("Dimensiones incompatibles para similitud coseno.")
+        n1, n2 = np.linalg.norm(v1), np.linalg.norm(v2)
+        if n1 == 0 or n2 == 0:
+            return 0.0
+        return float(np.dot(v1, v2) / (n1 * n2))
+
+    @staticmethod
+    def match_descriptor(descriptor_a, descriptor_b, umbral: float = 0.6) -> dict:
+        """Cotejo biométrico: distancia euclidiana (§RF-10) + similitud coseno.
+
+        Coincidencia cuando la distancia euclidiana es <= umbral.
+        """
+        a = np.asarray(descriptor_a, dtype=np.float64)
+        b = np.asarray(descriptor_b, dtype=np.float64)
+        if a.shape != b.shape:
+            raise ValueError("Descriptores de distinta dimensión.")
+        distancia = MathEngine.calculate_euclidean_distance(a, b)
+        similitud = MathEngine.cosine_similarity(a, b)
+        return {
+            "coincide": bool(distancia <= umbral),
+            "distancia": distancia,
+            "similitud": similitud,
+            "umbral": umbral,
+            "confianza": round(max(0.0, min(1.0, 1.0 - distancia / (2 * umbral))) * 100, 2),
+        }

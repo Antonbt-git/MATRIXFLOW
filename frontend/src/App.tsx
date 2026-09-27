@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-ro
 import {
   LayoutDashboard, Building2, Store, Package, ShoppingCart, Boxes,
   Sigma, Grid3x3, Calculator, SigmaSquare, History, FileBarChart,
-  Users, Settings, ChevronDown, ChevronRight,
+  Users, Settings, ChevronDown, ChevronRight, ScanFace,
 } from 'lucide-react';
 import { SidebarLink } from './components/UI';
 import Dashboard from './pages/Dashboard';
@@ -18,6 +18,7 @@ import Historial from './pages/Historial';
 import Inventario from './pages/Inventario';
 import Usuarios from './pages/Usuarios';
 import Configuracion from './pages/Configuracion';
+import Biometria from './pages/Biometria';
 import Login from './pages/Login';
 import Guard from './components/Guard';
 import { useAuth } from './hooks/useAuth';
@@ -39,6 +40,7 @@ const NAV = [
   ]},
   { to: '/historial', icon: History, label: 'Historial' },
   { to: '/reportes', icon: FileBarChart, label: 'Reportes' },
+  { to: '/biometrico', icon: ScanFace, label: 'Biometría' },
   { to: '/usuarios', icon: Users, label: 'Usuarios' },
   { to: '/configuracion', icon: Settings, label: 'Configuración' },
 ] as const;
@@ -107,6 +109,7 @@ const Layout: React.FC<{ user: ReturnType<typeof useAuth>['user']; onLogout: () 
           <Route path="/historial" element={<Guard><Historial /></Guard>} />
           <Route path="/reportes" element={<Goals />} />
           <Route path="/usuarios" element={<Guard><Usuarios /></Guard>} />
+          <Route path="/biometrico" element={<Guard><Biometria /></Guard>} />
           <Route path="/configuracion" element={<Guard><Configuracion /></Guard>} />
           <Route path="*" element={<Dashboard />} />
         </Routes>

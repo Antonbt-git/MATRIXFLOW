@@ -1,4 +1,5 @@
 export interface AuthUser {
+  id?: number;
   username: string;
   rol: 'admin' | 'analista' | 'consulta' | string;
   empresa_id: number;

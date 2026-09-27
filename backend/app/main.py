@@ -4,7 +4,7 @@ import os
 
 from app.api.routes import (
     auth, users, companies, branches, products, sales,
-    vectors, matrices, inventory, operations, reports,
+    vectors, matrices, inventory, operations, reports, biometrics,
 )
 from app.database.connection import engine, Base
 # Importar modelos para que Base.metadata conozca las tablas (Fase 3)
@@ -41,6 +41,7 @@ app.include_router(matrices.router)
 app.include_router(inventory.router)
 app.include_router(operations.router)
 app.include_router(reports.router)
+app.include_router(biometrics.router)
 
 
 @app.get("/", tags=["Root"])

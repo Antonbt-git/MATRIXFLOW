@@ -11,11 +11,15 @@ React+TS → FastAPI → NumPy → PostgreSQL. Ver Plan Maestro v1.0.
 - POST /operations/matrices/{add|subtract|multiply|transpose|scalar}
 - GET /operations/history (CA-08)
 - GET /reports/metas/{sucursal}/{periodo}, /reports/ventas, /reports/auditoria
+- Biométrica (extensión): POST /biometrics/register, POST /biometrics/verify,
+  GET|DELETE /biometrics/records, GET /biometrics/logs
 
 ## Matemática empresarial
 - Ingresos = cantidades · precios (dot_product)
 - Desviación = ventas_reales − metas (subtract_vectors)
 - Indicador ponderado = linear_combination
+- Identidad facial = ‖registro − escaneo‖₂ (match_descriptor, umbral 0.6) +
+  similitud coseno entre descriptores de 128 dimensiones
 
 ## Criterios de aceptación
 CA-01 login por rol, CA-04/05 vectores/matrices, CA-06 dimensiones rechazadas (400),
@@ -23,10 +27,11 @@ CA-07 resultados NumPy, CA-08 historial, CA-09 visualización, CA-10 reportes pe
 
 ## Puesta en marcha
 Backend: `pip install -r requirements.txt && uvicorn app.main:app`
-Migraciones (§10): `alembic upgrade head` (crea las 19 tablas; DATABASE_URL define destino)
+Migraciones (§10): `alembic upgrade head` (crea las 19 tablas + las 2 biométricas;
+DATABASE_URL define destino)
 Seed: `python database/seed.py` (crea admin/admin123 + roles RBAC)
 Frontend: `npm install && npm run dev`
-Tests: `pytest tests/ -q` (17 pruebas: motor, API, validadores, seguridad)
+Tests: `pytest tests/ -q` (29 pruebas: motor, API, validadores, seguridad, biometría)
 
 ## Despliegue en la nube
 Guía paso a paso en [`DEPLOY.md`](DEPLOY.md): **Supabase** (PostgreSQL, Session
@@ -35,4 +40,6 @@ Alembic → `app/bootstrap.py` → uvicorn) + **Vercel** (SPA con `frontend/verc
 
 ## Stack frontend (§8.1)
 React+TS+Vite, TanStack Query + Axios (services/client.ts), Tailwind (paleta §8.4),
-Lucide React (iconografía), React Hook Form + Zod (schemas/business.ts), Recharts.
+Lucide React (iconografía), React Hook Form + Zod (schemas/business.ts), Recharts,
+`@vladmandic/face-api` (descriptor facial 128-d, pesos en `frontend/public/models`,
+cargado bajo demanda en `services/faceapi.ts`).

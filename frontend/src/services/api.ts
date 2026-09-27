@@ -73,4 +73,12 @@ export const api = {
   updateUser: (id: number, data: object) => client.put(`/users/${id}`, data),
   deleteUser: (id: number) => client.delete(`/users/${id}`),
   audit: (cfg?: Cfg) => get<any[]>('/reports/auditoria?limit=100', cfg),
+  // Biométrica: registro facial + verificación por DNI (extensión del plan)
+  registerFace: (dni: string, descriptor: number[], usuario_id?: number) =>
+    post<any>('/biometrics/register', { dni, descriptor, usuario_id }),
+  verifyFace: (dni: string, descriptor: number[]) =>
+    post<any>('/biometrics/verify', { dni, descriptor }),
+  listFaceRecords: (cfg?: Cfg) => get<any[]>('/biometrics/records', cfg),
+  deleteFaceRecord: (id: number) => client.delete(`/biometrics/records/${id}`),
+  biometricLogs: (cfg?: Cfg) => get<any[]>('/biometrics/logs', cfg),
 };
