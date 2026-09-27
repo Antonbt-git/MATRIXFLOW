@@ -30,6 +30,36 @@ export async function login(username: string, password: string): Promise<AuthUse
   return data.user;
 }
 
+/**
+ * Inicio de sesión con DNI + escaneo facial: el backend coteja el descriptor
+ * almacenado (distancia euclidiana, umbral 0.55) y emite el JWT si coincide.
+ * Devuelve el usuario identificado y la métrica de confianza.
+ */
+export async function loginBiometrico(
+  dni: string,
+  descriptor: number[],
+): Promise<{ user: AuthUser; coincidencia?: any }> {
+  const response = await fetch(`${API_URL}/api/v1/auth/login-biometrico`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dni, descriptor }),
+  });
+
+  if (!response.ok) {
+    let detail = `Error de autenticación (${response.status})`;
+    try {
+      const err = await response.json();
+      if (typeof err?.detail === 'string') detail = err.detail;
+    } catch { /* sin cuerpo: mensaje genérico */ }
+    throw new Error(detail);
+  }
+
+  const data: LoginResponse & { coincidencia?: any } = await response.json();
+  localStorage.setItem(TOKEN_KEY, data.access_token);
+  localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+  return { user: data.user, coincidencia: data.coincidencia };
+}
+
 export function logout() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);

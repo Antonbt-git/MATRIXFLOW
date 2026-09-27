@@ -5,6 +5,7 @@ React+TS → FastAPI → NumPy → PostgreSQL. Ver Plan Maestro v1.0.
 
 ## Endpoints principales
 - POST /auth/login (OAuth2 form) → JWT
+- POST /auth/login-biometrico {dni, descriptor} → JWT por rostro (umbral 0.55)
 - GET /auth/me
 - CRUD: /business/empresas|surcursales|productos, /vectors/, /matrices/, /inventory/, /sales/
 - Operaciones: POST /operations/vectors/{sum|subtract|dot|scalar|linear_combination|distance}
@@ -34,7 +35,8 @@ Migraciones (§10): `alembic upgrade head` (crea las 19 tablas + las 2 biométri
 DATABASE_URL define destino)
 Seed: `python database/seed.py` (crea admin/admin123 + roles RBAC)
 Frontend: `npm install && npm run dev`
-Tests: `pytest tests/ -q` (36 pruebas: motor, API, validadores, seguridad, biometría, carnet)
+Tests: `pytest tests/ -q` (43 pruebas: motor, API, validadores, seguridad,
+biometría, login facial, carnet)
 
 ## Despliegue en la nube
 Guía paso a paso en [`DEPLOY.md`](DEPLOY.md): **Supabase** (PostgreSQL, Session

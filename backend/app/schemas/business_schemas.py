@@ -278,6 +278,12 @@ class BiometricoVerificacionCreate(BaseModel):
     descriptor: List[float]
 
 
+class LoginBiometrico(BaseModel):
+    """Inicio de sesión con DNI + escaneo facial (login pantalla de acceso)."""
+    dni: str = Field(min_length=6, max_length=15)
+    descriptor: List[float]
+
+
 class RegistroFacialResponse(BaseModel):
     id: int
     usuario_id: int

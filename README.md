@@ -21,7 +21,8 @@ Este proyecto implementa la totalidad de los requerimientos funcionales y técni
   activos y lugar desde el que te conectas.
 - **Verificación Biométrica**: Registro facial de los usuarios (descriptor de 128
   dimensiones + DNI) e identificación por DNI + rostro que muestra sus datos y su
-  actividad en la página (operaciones, ventas, sesiones y auditoría).
+  actividad en la página (operaciones, ventas, sesiones y auditoría), además de
+  **inicio de sesión facial** desde la pantalla de acceso (DNI + escaneo → JWT).
 
 ---
 
@@ -62,7 +63,7 @@ El sistema no solo almacena datos, sino que los procesa matemáticamente:
    (usa SQLite `backend/matrixflow_local.db` si no defines `DATABASE_URL`).
 2. **Datos**: `python database/seed.py` → admin `admin` / `admin123`.
 3. **Frontend**: `cd frontend && npm install && npm run dev` → http://localhost:5173.
-4. **Tests**: `cd backend && python -m pytest tests/ -q` (36 pruebas).
+4. **Tests**: `cd backend && python -m pytest tests/ -q` (43 pruebas).
 
 ### Producción (resumen)
 1. **Supabase** → copia la *Session pooler* (puerto `6543`, `?sslmode=require`).
