@@ -1,0 +1,9 @@
+# Artefactos (no forman parte de la estructura del Plan §17)
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+frontend/dist/
+frontend/node_modules/
+backend/.venv/
+.env

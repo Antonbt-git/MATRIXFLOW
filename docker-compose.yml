@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: matrixflow
+      POSTGRES_PASSWORD: matrixflow
+      POSTGRES_DB: matrixflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://matrixflow:matrixflow@db:5432/matrixflow
+      SECRET_KEY: change_me_in_prod
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+volumes:
+  pgdata:

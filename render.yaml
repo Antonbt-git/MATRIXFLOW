@@ -1,0 +1,33 @@
+# Render Blueprint — backend FastAPI (MatrixFlow Enterprise)
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: matrixflow-api
+    runtime: python
+    rootDir: backend
+    plan: free            # Starter; sube a starter+ si necesitas más RAM
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Supabase: Settings → Database → Connection string (Session pooler, puerto 6543)
+      # y agrega ?sslmode=require al final.
+      - key: DATABASE_URL
+        sync: false
+      # Generado por Render (cámbialo si prefieres uno propio)
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+      # Dominios permitidos (CORS): tu app de Vercel + dominio de Render
+      # Ej: https://matrixflow.vercel.app,https://matrixflow-api.onrender.com
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ADMIN_USERNAME
+        value: admin
+      # Contraseña del usuario admin creado en el primer arranque
+      - key: ADMIN_PASSWORD
+        sync: false
