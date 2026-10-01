@@ -1,12 +1,4 @@
-"""
-Geolocalización de la IP de inicio de sesión (§13: auditoría con ubicación).
 
-Devuelve departamento, distrito y dirección a partir de la IP pública del
-cliente. Usa servicios gratuitos sin API key (ip-api.com y, como respaldo,
-ipwho.is) con caché en memoria para no agotar el límite de peticiones.
-Si la IP es local/privada (desarrollo) o el servicio falla, devuelve valores
-"locales" sin salir a la red.
-"""
 import ipaddress
 import json
 import urllib.request
@@ -53,7 +45,7 @@ def _direccion(*partes: str) -> Optional[str]:
 
 def _desde_ip_api(ip: str) -> Optional[dict]:
     """ip-api.com (gratis, sin key): trae también 'district' (distrito)."""
-    campos = "status,country,regionName,city,district,zip,query"
+    campos = "status,country,regionName,city,district,zip,query,lat,lon"
     data = _get_json(f"http://ip-api.com/json/{ip}?lang=es&fields={campos}")
     if not data or data.get("status") != "success":
         return None
@@ -64,6 +56,8 @@ def _desde_ip_api(ip: str) -> Optional[dict]:
         "distrito": distrito or ciudad,
         "direccion": _direccion(distrito, ciudad, data.get("zip"), data.get("country")),
         "pais": data.get("country"),
+        "latitud": data.get("lat"),
+        "longitud": data.get("lon"),
         "fuente": "ip-api.com",
     }
 
@@ -79,6 +73,8 @@ def _desde_ipwho(ip: str) -> Optional[dict]:
         "distrito": ciudad,
         "direccion": _direccion(ciudad, data.get("postal"), data.get("country")),
         "pais": data.get("country"),
+        "latitud": data.get("latitude"),
+        "longitud": data.get("longitude"),
         "fuente": "ipwho.is",
     }
 
@@ -86,7 +82,8 @@ def _desde_ipwho(ip: str) -> Optional[dict]:
 def resolver_ubicacion(ip: Optional[str]) -> dict:
     """→ {departamento, distrito, direccion, ip, fuente} (nunca lanza excepción)."""
     base = {"ip": ip, "departamento": None, "distrito": None,
-            "direccion": None, "pais": None, "fuente": None}
+            "direccion": None, "pais": None, "latitud": None,
+            "longitud": None, "fuente": None}
 
     if not ip:
         return {**base, "departamento": "Desconocido", "distrito": "Desconocido",

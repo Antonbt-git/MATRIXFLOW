@@ -342,6 +342,8 @@ class CarnetUbicacion(BaseModel):
     departamento: Optional[str] = None
     distrito: Optional[str] = None
     direccion: Optional[str] = None
+    latitud: Optional[float] = None
+    longitud: Optional[float] = None
     ip: Optional[str] = None
     fecha: Optional[datetime] = None
     fuente: Optional[str] = None

@@ -45,7 +45,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(),
                            detalle="Login exitoso", ip=ip, estado="OK", resultado="Token emitido",
                            departamento=ubicacion.get("departamento"),
                            distrito=ubicacion.get("distrito"),
-                           direccion=ubicacion.get("direccion")))
+                           direccion=ubicacion.get("direccion"),
+                           latitud=ubicacion.get("latitud"),
+                           longitud=ubicacion.get("longitud")))
     db.commit()
 
     return {

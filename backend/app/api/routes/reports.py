@@ -86,6 +86,32 @@ def _utc(ts) -> datetime | None:
     return ts if ts.tzinfo else ts.replace(tzinfo=timezone.utc)
 
 
+@router.get("/ultimo-login")
+def ultimo_login(db: Session = Depends(get_db),
+                current_user: Usuario = Depends(get_current_user)):
+    """Devuelve la ubicación del último login exitoso de cualquier usuario."""
+    ultimo = (db.query(AuditoriaEvento)
+              .filter(AuditoriaEvento.accion == "LOGIN",
+                      AuditoriaEvento.estado == "OK")
+              .order_by(AuditoriaEvento.timestamp.desc(), AuditoriaEvento.id.desc())
+              .first())
+    if not ultimo:
+        return {"disponible": False}
+
+    usuario = db.get(Usuario, ultimo.usuario_id) if ultimo.usuario_id else None
+    return {
+        "disponible": True,
+        "usuario": usuario.username if usuario else "Desconocido",
+        "departamento": ultimo.departamento,
+        "distrito": ultimo.distrito,
+        "direccion": ultimo.direccion,
+        "latitud": ultimo.latitud,
+        "longitud": ultimo.longitud,
+        "ip": ultimo.ip,
+        "fecha": _utc(ultimo.timestamp),
+    }
+
+
 @router.get("/carnet", response_model=CarnetResponse)
 def carnet_auditoria(request: Request, db: Session = Depends(get_db),
                      current_user: Usuario = Depends(get_current_user)):

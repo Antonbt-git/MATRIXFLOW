@@ -113,6 +113,8 @@ class AuditoriaEvento(Base):
     departamento = Column(String)
     distrito = Column(String)
     direccion = Column(String)
+    latitud = Column(Float)
+    longitud = Column(Float)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
 

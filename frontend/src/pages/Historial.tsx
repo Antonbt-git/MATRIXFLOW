@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import CarnetAuditoria from '../components/CarnetAuditoria';
+import MapaUltimoLogin from '../components/MapaUltimoLogin';
 import { PageHeader, Card, Msg, EmptyState, Badge } from '../components/UI';
 import { History, Sigma, CircleAlert } from 'lucide-react';
 
@@ -25,6 +26,10 @@ export default function Historial() {
       {/* Carnet de auditoría: 7 días, usuarios activos y ubicación de login */}
       <div className="mb-5">
         <CarnetAuditoria />
+      </div>
+
+      <div className="mb-5">
+        <MapaUltimoLogin />
       </div>
 
       <Card

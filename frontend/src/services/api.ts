@@ -75,6 +75,7 @@ export const api = {
   audit: (cfg?: Cfg) => get<any[]>('/reports/auditoria?limit=100', cfg),
   // Carnet de auditoría (Historial): 7 días, usuarios activos, ubicación
   carnet: (cfg?: Cfg) => get<any>('/reports/carnet', cfg),
+  ultimoLogin: (cfg?: Cfg) => get<any>('/reports/ultimo-login', cfg),
   // Biométrica: registro facial + verificación por DNI (extensión del plan)
   registerFace: (dni: string, descriptor: number[], usuario_id?: number) =>
     post<any>('/biometrics/register', { dni, descriptor, usuario_id }),
